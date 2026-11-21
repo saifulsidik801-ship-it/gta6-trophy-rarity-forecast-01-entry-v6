@@ -148,8 +148,16 @@ def rw_spread(d_days):
 
 
 def persistence_quantiles(last_rate, d_days):
-    """Fallback: median = last rate, house random-walk spread."""
-    if last_rate is None or last_rate >= 100.0:
+    """Fallback: median = last rate, house random-walk spread.
+
+    A trophy never seen in any read (last_rate None) gets a low median
+    with a wide spread -- never 100%.
+    """
+    if last_rate is None:
+        s = rw_spread(d_days) + 1.0
+        lg = logit(LOW)
+        return [round(clamp_pct(inv_logit(lg + z * s)), 4) for z in Z]
+    if last_rate >= 100.0:
         return [100.0, 100.0, 100.0, 100.0, 100.0]
     s = rw_spread(d_days)
     lg = logit(last_rate)
